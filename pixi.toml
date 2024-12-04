@@ -1,0 +1,15 @@
+[project]
+authors = ["notPlancha <31565873+notPlancha@users.noreply.github.com>"]
+channels = ["conda-forge"]
+description = "Add a short description here"
+name = "adventofcode"
+platforms = ["win-64"]
+version = "0.1.0"
+
+[tasks]
+black = 'ruff format *.py --config "indent-width = 2"'
+
+[dependencies]
+jupyter = ">=1.1.1,<2"
+more-itertools = ">=10.5.0,<11"
+ruff = ">=0.8.1,<0.9"
