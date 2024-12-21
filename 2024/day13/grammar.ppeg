@@ -1,0 +1,8 @@
+data         = entry+
+entry        = button coords nl button coords nl prize nl? nl?
+coords       = "X+" n ", Y+" n
+prize        = "Prize: X=" n ", Y=" n
+nl           = "\n"
+button       = "Button " button_label ": "
+button_label = "A" / "B"
+n            = ~"\d+"
