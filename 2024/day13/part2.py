@@ -11,7 +11,7 @@ from sympy.core.numbers import int_valued
 
 ic.configureOutput(argToStringFunction=lambda x: pprint.pformat(x, sort_dicts=False))  # icecream bug #199
 t = TicToc()
-ic.enable()
+ic.disable()
 
 re_b = re.compile(r"Button [AB]: X\+(\d+), Y\+(\d+)")
 re_p = re.compile(r"Prize: X=(\d+), Y=(\d+)")
