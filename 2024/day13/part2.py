@@ -1,21 +1,27 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
-
+import pprint
 import pulp
+import sympy
 from icecream import ic
 from pulp import *
 from pytictoc import TicToc
+from sympy.core.numbers import int_valued
 
+ic.configureOutput(argToStringFunction=lambda x: pprint.pformat(x, sort_dicts=False))  # icecream bug #199
 t = TicToc()
 ic.enable()
 
 re_b = re.compile(r"Button [AB]: X\+(\d+), Y\+(\d+)")
 re_p = re.compile(r"Prize: X=(\d+), Y=(\d+)")
 
+
 class Button(NamedTuple):
   x: int
   y: int
+
+
 class Prize(NamedTuple):
   x: int
   y: int
@@ -41,12 +47,12 @@ def load_data(file_name) -> list[Machine]:
   machines = [section.splitlines() for section in Path(file_name).read_text().split("\n\n")]
   return [Machine.from_list(i) for i in machines]
 
+
 if __name__ == '__main__':
-  machines = load_data("test_inp.txt")
+  machines = load_data("input.txt")
   out = 0
   t.tic()
   for i, machine in enumerate(machines):
-    if i != 1: continue
     ic(i)
     A, B, p = machine.A, machine.B, machine.prize
     A: Button
@@ -54,18 +60,14 @@ if __name__ == '__main__':
     p: Prize
 
     # equation is AX*na + BX*nb = px
-    # obj: lowerst tokens
-    # tokens = na*3 + nb * 1
-    na = LpVariable("na", 100, 1e14, cat=LpInteger)
-    nb = LpVariable("nb", 100, 1e14, cat=LpInteger)
-    prob = LpProblem(f"Machine_{i}", LpMinimize)
-    prob += 3*na + 1*nb
-    prob += A.x*na + B.x*nb == p.x + 1e13
-    prob += A.y*na + B.y*nb == p.y + 1e13
-    ic(prob)
-    status = prob.solve(getSolver("GLPK_CMD"))
-    ic(LpStatus[status], status)
-    if status == 1: # Optimal found
-      out += prob.objective.value()
+    na, nb = sympy.symbols("na nb", integer=True)
+    d = ic(sympy.solve([  # if too slow, use nsolve
+      A.x * na + B.x * nb - (p.x + 1e13),
+      A.y * na + B.y * nb - (p.y + 1e13),
+    ], [na, nb], dict=True))
+    ic(d)
+    if len(d) > 0:
+      # assert len(d) == 1  # Can calculate best one if needed but input doesnt have any example of this
+      out += 3 * d[0][na] + 1 * d[0][nb]
   t.toc()
   print(out)
