@@ -26,4 +26,4 @@ for tt in range(25):
   stones = new_stones
   ic(tt)
   t.toc()
-print(len(stones)) # 175006
+print(len(stones))  # 175006

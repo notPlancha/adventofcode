@@ -21,10 +21,10 @@ out = Out(len(stones))
 l = deque()
 
 def treat_stone(stone: int, blinked=0):
-  if blinked >= 75 :
+  if blinked >= 6 :
     l.append(stone)
     return
-
+  ic(stone)
   if stone == 0:
     treat_stone(1, blinked=blinked + 1)
     return
