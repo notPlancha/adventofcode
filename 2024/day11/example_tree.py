@@ -19,7 +19,7 @@ def add_node(g, node, y_level):
   if node not in g:
     last_of_level[y_level] += 1
     x = last_of_level[y_level]
-    g.add_node(node, pos=(x, y_level))
+    g.add_node(node, pos=(x, -y_level))  # Invert the y position by multiplying it with -1
     # add node to the graph at the given y_level and a new x, right to the previous node
 
 
