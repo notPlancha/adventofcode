@@ -1,34 +1,46 @@
-# If the stone is engraved with the number 0, it is replaced by a stone engraved with the number 1. If the stone is
-# engraved with a number that has an even number of digits, it is replaced by two stones. The left half of the digits
-# are engraved on the new left stone, and the right half of the digits are engraved on the new right stone. (The new
-# numbers don't keep extra leading zeroes: 1000 would become stones 10 and 0.) If none of the other rules apply,
-# the stone is replaced by a new stone; the old stone's number multiplied by 2024 is engraved on the new stone.
 from collections import deque
 from dataclasses import dataclass
-from typing import Self
-import math
-from icecream import ic
 from pathlib import Path
+
+from icecream import ic
 from pytictoc import TicToc
 
 t = TicToc()
+ic.enable()
 
-stones = deque()
-stones.extend(map(int, Path("input.txt").read_text().split(" ")))
+stones = list(map(int, Path("test.txt").read_text().split(" ")))
 ic(stones)
-for tt in range(75):
+
+
+@dataclass()
+class Out:
+  value: int
+
+
+out = Out(len(stones))
+l = deque()
+
+def treat_stone(stone: int, blinked=0):
+  if blinked >= 75 :
+    l.append(stone)
+    return
+
+  if stone == 0:
+    treat_stone(1, blinked=blinked + 1)
+    return
+  str_stone = str(stone)
+  if len(str_stone) % 2 == 0:
+    out.value += 1
+    mid_point = len(str_stone) // 2
+    treat_stone(int(str_stone[mid_point:]), blinked=blinked + 1)
+    treat_stone(int(str_stone[:mid_point]), blinked=blinked + 1)
+  else:
+    treat_stone(stone * 2024, blinked=blinked + 1)
+  return
+
+
+for stone in stones:
   t.tic()
-  new_stones = deque()
-  for i in stones:
-    if i == 0:
-      new_stones.append(1)
-    elif len(str_i := str(i)) % 2 == 0:
-      mid_point = len(str_i) // 2
-      new_stones.append(int(str_i[:mid_point]))
-      new_stones.append(int(str_i[mid_point:]))
-    else:
-      new_stones.append(i * 2024)
-  stones = new_stones
-  ic(tt)
+  treat_stone(stone)
   t.toc()
-print(len(stones))
+print(out)
