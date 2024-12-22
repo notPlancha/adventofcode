@@ -70,4 +70,4 @@ if __name__ == '__main__':
       # assert len(d) == 1  # Can calculate best one if needed but input doesnt have any example of this
       out += 3 * d[0][na] + 1 * d[0][nb]
   t.toc()
-  print(out)
+  print(out) # 108528956728655
