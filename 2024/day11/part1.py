@@ -13,7 +13,7 @@ stones = deque()
 stones.extend(map(int, Path("test.txt").read_text().split(" ")))
 ic(stones)
 t.tic()
-for tt in range(10):
+for tt in range(25):
   new_stones = deque()
   for i in stones:
     if i == 0:
