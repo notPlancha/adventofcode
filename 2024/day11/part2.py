@@ -1,67 +1,60 @@
-from collections import deque, defaultdict
-from itertools import pairwise
+from collections import deque
+from dataclasses import dataclass
 from pathlib import Path
-import networkx as nx
-from networkx.drawing.nx_agraph import to_agraph
 from pyprojroot.here import here
+from icecream import ic
 
-import matplotlib.pyplot as plt
+ic.enable()
+
+def main(file: Path, n_blinked: int):
+  #region build adj list
+  adj_list: dict[int, list[int]] = {}
+  root_stones = curr_stones = deque(map(int, Path(file).read_text().split(" ")))
+  for i in range(n_blinked):
+    next_stones = deque()
+    for stone in curr_stones:
+      if stone in adj_list: continue # found loop
+      #region conditions
+      if stone == 0:
+        adj_list[0] = [1]
+        next_stones.append(1)
+      elif len(str_stone := str(stone)) % 2 == 0:
+        mid_point = len(str_stone) // 2
+        left = int(str_stone[:mid_point])
+        right = int(str_stone[mid_point:])
+        adj_list[stone] = [left, right]
+        next_stones.append(left)
+        next_stones.append(right)
+      else:
+        new_stone = stone * 2024
+        adj_list[stone] = [new_stone]
+        next_stones.append(new_stone)
+      #endregion
+    if len(next_stones) == 0:
+      print(f"found complete graph consisting of {len(adj_list)} nodes in {i} iterations")
+      break
+    curr_stones = next_stones
+  else:
+    print(f"incomplete graph consisting of {len(adj_list)} nodes ({n_blinked} iterations)")
+  #endregion
+
+  @dataclass
+  class Out:
+    val: int = 0
+  out = Out()
+
+  def transverse(stone, depth = 0):
+    if depth == n_blinked:
+      out.val += 1
+      return
+    for child in adj_list[stone]:
+      transverse(child, depth+1)
+  for root in root_stones:
+    ic(root)
+    transverse(root)
+  return out.val
 
 
-def node_on_graph(g, node):
-  return node in g
-
-
-last_of_level: dict[int, int] = defaultdict(lambda: -1)
-
-
-def add_node(g, node, y_level, new_stones_list):
-  if node not in g:
-    last_of_level[y_level] += 1
-    x = last_of_level[y_level]
-    g.add_node(node, pos=(x, -y_level))
-    new_stones_list.append(node)
-    # Invert the y position by multiplying it with -1
-    # add node to the graph at the given y_level and a new x, right to the previous node
-
-
-file_name = here("2024/day11/test.txt")
-
-g = nx.DiGraph()
-stones = deque()
-stones.extend(map(int, Path(file_name).read_text().split(" ")))
-
-# region add root stones
-for stone in stones:
-  add_node(g, stone, 0, deque())
-
-# endregion
-
-# test node_on_graph
-print(node_on_graph(g, 17))
-assert node_on_graph(g, 17)
-
-for blinked in range(25):
-  new_stones = deque()
-  # region create new stones and add them to graph and join to previous nodes
-  for i in stones:
-    if i == 0:
-      add_node(g, 1, blinked + 1, new_stones)
-      g.add_edge(0, 1)
-    elif len(str_i := str(i)) % 2 == 0:
-      mid_point = len(str_i) // 2
-      add_node(g, int(str_i[:mid_point]), blinked + 1, new_stones)
-      g.add_edge(i, int(str_i[:mid_point]))
-      g.add_edge(i, int(str_i[:mid_point]))
-      add_node(g, int(str_i[mid_point:]), blinked + 1, new_stones)
-      g.add_edge(i, int(str_i[mid_point:]))
-    else:
-      new_stone = i * 2024
-      add_node(g, new_stone, blinked + 1, new_stones)
-      g.add_edge(i, new_stone)
-  # endregion
-  stones = new_stones
-
-# get the position of each node
-pos = nx.get_node_attributes(g, "pos")
-print(pos)
+if __name__ == '__main__':
+  out = ic(main(file = here("2024/day11/test.txt"), n_blinked = 75))
+  print(f"{out=}")
