@@ -1,4 +1,6 @@
 from collections import deque, defaultdict
+from itertools import chain
+
 from more_itertools import pairwise
 from pathlib import Path
 import networkx as nx
@@ -9,6 +11,7 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from pytictoc import TicToc
 import functools
+
 
 def node_on_graph(g, node):
   return node in g
@@ -30,7 +33,7 @@ def add_node(g, node, y_level, new_stones_list):
 
 def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
   g = nx.DiGraph()
-  stones = deque()
+  roots = stones = deque()
   stones.extend(map(int, Path(file_name).read_text().split(" ")))
 
   # region add root stones
@@ -38,6 +41,7 @@ def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
     add_node(g, stone, 0, deque())
 
   # endregion
+
   for blinked in range(times_to_blink):
     t.tic()
     new_stones = deque()
@@ -65,9 +69,15 @@ def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
     stones = new_stones
     t.toc(f"{blinked=}, ")
 
+  #region color nodes without edges
+  # nodes_without_edges = [n for n, d in list(g.out_degree) if d == 0]
+  # for node in nodes_without_edges:
+  #   g.nodes[node]["color"] = "green"
+  #endregion
+
   # region Visualize the graph
-  pos = nx.get_node_attributes(g, "pos")
-  if viz:
+  def plot_graph(file_name = here("2024/day11/graph.pdf")):
+    pos = nx.get_node_attributes(g, "pos")
     plt.figure(figsize=(10, 10))
     # find out colors
     colors = [g.nodes[n].get("color", "skyblue") for n in g.nodes]
@@ -75,42 +85,58 @@ def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
     plt.title("Graph Visualization")
     plt.savefig(here("2024/day11/graph.pdf"))
     plt.show()
+  if viz:
+    plot_graph()
   #endregion
 
-  #region transverse
-  roots = list(map(int, Path(file_name).read_text().split(" ")))
-  ic(roots)
+  #region loop fast slow
+  def advance_slow(root: int):
+    yielded = deque()
+    yielded.append(root)
+    while True:
+      yield yielded
+      to_yield = deque()
+      for node in yielded:
+        to_yield.extend(g.successors(node))
+      yielded = to_yield
 
-  @dataclass
-  class Out:
-    value: int
+  def advance_fast(root: int):
+    yielded = deque()
+    yielded.append(root)
+    should_yield = True
+    while True:
+      if should_yield: yield yielded
+      to_yield = deque()
+      for node in yielded:
+        to_yield.extend(g.successors(node))
+      yielded = to_yield
+      should_yield = False if should_yield is True else True
 
-  out = Out(0)
-
-  @functools.cache
-  def sucessors(node):
-    return g.successors(node)
-
-  def transverse(g, root, depth, td=times_to_blink, n=out):
-    if depth == td:
-      n.value += 1
-      return
-    depth += 1
-    if g.nodes[root].get("color") == "red":
-      transverse(g, next(g.successors(root)), depth, td, n)
-    for node in g.successors(root):
-      transverse(g, node, depth, td, n)
-    return
 
   for root in roots:
-    t.tic()
-    depth = 0
-    transverse(g, root, depth)
-    t.toc(f"{root=}, {out.value=},")
-  print(out.value)
-  # print(final_stones)
-  #endregion
+    slow_iter = iter(advance_slow(root))
+    fast_iter = iter(advance_fast(root))
+    for i in range(25):
+      slows = next(slow_iter)
+      fasts = next(fast_iter)
+      # plot graph with slows and fast colored
+      for slow in slows:
+        g.nodes[slow]["color"] = "yellow"
+      for fast in fasts:
+        g.nodes[fast]["color"] = "lightgreen"
+      # color conincident nodes
+      for coincident in set(slows).intersection(fasts):
+        g.nodes[coincident]["color"] = "purple"
+      plot_graph()
+      # reset colors
+      for slow in slows:
+        g.nodes[slow]["color"] = "skyblue"
+      for fast in fasts:
+        g.nodes[fast]["color"] = "skyblue"
+    break  # temp
+#endregion
+
 
 
 if __name__ == '__main__':
-  main(viz=False, file_name=here("2024/day11/test.txt"), times_to_blink=75)
+  main(viz=True, file_name=here("2024/day11/test.txt"), times_to_blink=75)
