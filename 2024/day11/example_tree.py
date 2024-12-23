@@ -1,5 +1,5 @@
 from collections import deque, defaultdict
-from itertools import pairwise
+from more_itertools import pairwise
 from pathlib import Path
 import networkx as nx
 from networkx.drawing.nx_agraph import to_agraph
@@ -7,13 +7,15 @@ from pyprojroot.here import here
 from icecream import ic
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-
+from pytictoc import TicToc
+import functools
 
 def node_on_graph(g, node):
   return node in g
 
 
 last_of_level: dict[int, int] = defaultdict(lambda: -1)
+t = TicToc()
 
 
 def add_node(g, node, y_level, new_stones_list):
@@ -25,6 +27,7 @@ def add_node(g, node, y_level, new_stones_list):
     # Invert the y position by multiplying it with -1
     # add node to the graph at the given y_level and a new x, right to the previous node
 
+
 def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
   g = nx.DiGraph()
   stones = deque()
@@ -35,8 +38,8 @@ def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
     add_node(g, stone, 0, deque())
 
   # endregion
-
   for blinked in range(times_to_blink):
+    t.tic()
     new_stones = deque()
     # region create new stones and add them to graph and join to previous nodes
     for i in stones:
@@ -60,12 +63,12 @@ def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
         g.add_edge(i, new_stone)
     # endregion
     stones = new_stones
-
+    t.toc(f"{blinked=}, ")
 
   # region Visualize the graph
   pos = nx.get_node_attributes(g, "pos")
-  if not viz:
-    graph_fig = plt.figure(figsize=(10, 10))
+  if viz:
+    plt.figure(figsize=(10, 10))
     # find out colors
     colors = [g.nodes[n].get("color", "skyblue") for n in g.nodes]
     nx.draw(g, pos=pos, with_labels=True, node_size=1000, font_size=10, node_color=colors, edge_color="gray")
@@ -74,15 +77,6 @@ def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
     plt.show()
   #endregion
 
-  # region DFS Trees
-  # roots = list(map(int, Path(file_name).read_text().split(" ")))
-  # dfs_trees = [nx.dfs_tree(g, i, depth_limit=times_to_blink) for i in roots]
-  # for tree in dfs_trees:
-  #   plt.figure(figsize=(10, 10))
-  #   nx.draw(tree, pos=pos, with_labels=True, node_size=1000, font_size=10, node_color="skyblue", edge_color="gray")
-  #   plt.title("DFS Tree")
-  #   plt.show()
-  #endregion
   #region transverse
   roots = list(map(int, Path(file_name).read_text().split(" ")))
   ic(roots)
@@ -91,32 +85,32 @@ def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
   class Out:
     value: int
 
-
   out = Out(0)
-  final_stones = []
 
+  @functools.cache
+  def sucessors(node):
+    return g.successors(node)
 
-  def transverse(g, root, depth, td=times_to_blink, stones=final_stones, n=out):
+  def transverse(g, root, depth, td=times_to_blink, n=out):
     if depth == td:
       n.value += 1
-      stones.append(root)
       return
     depth += 1
     if g.nodes[root].get("color") == "red":
-      transverse(g, next(g.successors(root)), depth, td, stones, n)
+      transverse(g, next(g.successors(root)), depth, td, n)
     for node in g.successors(root):
-      transverse(g, node, depth, td, stones, n)
+      transverse(g, node, depth, td, n)
     return
 
-
   for root in roots:
+    t.tic()
     depth = 0
-    ic(f"{root=}")
     transverse(g, root, depth)
+    t.toc(f"{root=}, {out.value=},")
   print(out.value)
-  print(final_stones)
+  # print(final_stones)
   #endregion
 
 
 if __name__ == '__main__':
-  main(viz=False, file_name=here("2024/day11/test.txt"), times_to_blink=25)
+  main(viz=False, file_name=here("2024/day11/test.txt"), times_to_blink=75)
