@@ -7,12 +7,13 @@ from pathlib import Path
 from pytictoc import TicToc
 
 t = TicToc()
+ic.disable()
 
 stones = deque()
-stones.extend(map(int, Path("input.txt").read_text().split(" ")))
+stones.extend(map(int, Path("test.txt").read_text().split(" ")))
 ic(stones)
-for tt in range(25):
-  t.tic()
+t.tic()
+for tt in range(10):
   new_stones = deque()
   for i in stones:
     if i == 0:
@@ -25,5 +26,6 @@ for tt in range(25):
       new_stones.append(i * 2024)
   stones = new_stones
   ic(tt)
-  t.toc()
+t.toc()
+print(stones)
 print(len(stones))  # 175006
