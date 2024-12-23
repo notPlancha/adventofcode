@@ -68,7 +68,7 @@ for blinked in range(times_to_blink):
 pos = nx.get_node_attributes(g, "pos")
 
 # Visualize the graph
-if True:
+if False:
   graph_fig = plt.figure(figsize=(10, 10))
   nx.draw(g, pos=pos, with_labels=True, node_size=1000, font_size=10)
   plt.title("Graph Visualization")
@@ -90,13 +90,13 @@ out = Out(0)
 final_stones = []
 
 
-def transverse(g, root, depth):
-  if depth == times_to_blink:
-    out.value += 1
-    final_stones.append(root)
+def transverse(g, root, depth, td=times_to_blink, stones = final_stones, n = out):
+  if depth == td:
+    n.value += 1
+    stones.append(root)
     return
   for node in g.successors(root):
-    transverse(g, node, depth + 1)
+    transverse(g, node, depth + 1, td, stones, n)
   return
 
 
@@ -105,3 +105,17 @@ for root in roots:
   transverse(g, root, depth)
 print(out.value)
 print(final_stones)
+
+
+# temp: makes lists for all until times_to_blink
+ffs : list[list[int]] = []
+for i in range(times_to_blink+1):
+  out = Out(0)
+  final_stones = []
+  for root in roots:
+    depth = 0
+    transverse(g, root, depth, i, final_stones)
+  print(f"{i=}")
+  print(out.value)
+  print(final_stones)
+  ffs.append(final_stones)
