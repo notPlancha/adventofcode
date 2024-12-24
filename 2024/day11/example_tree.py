@@ -89,53 +89,6 @@ def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
     plot_graph()
   #endregion
 
-  #region loop fast slow
-  def advance_slow(root: int):
-    yielded = deque()
-    yielded.append(root)
-    while True:
-      yield yielded
-      to_yield = deque()
-      for node in yielded:
-        to_yield.extend(g.successors(node))
-      yielded = to_yield
-
-  def advance_fast(root: int):
-    yielded = deque()
-    yielded.append(root)
-    should_yield = True
-    while True:
-      if should_yield: yield yielded
-      to_yield = deque()
-      for node in yielded:
-        to_yield.extend(g.successors(node))
-      yielded = to_yield
-      should_yield = False if should_yield is True else True
-
-
-  for root in roots:
-    slow_iter = iter(advance_slow(root))
-    fast_iter = iter(advance_fast(root))
-    for i in range(25):
-      slows = next(slow_iter)
-      fasts = next(fast_iter)
-      # plot graph with slows and fast colored
-      for slow in slows:
-        g.nodes[slow]["color"] = "yellow"
-      for fast in fasts:
-        g.nodes[fast]["color"] = "lightgreen"
-      # color conincident nodes
-      for coincident in set(slows).intersection(fasts):
-        g.nodes[coincident]["color"] = "purple"
-      plot_graph()
-      # reset colors
-      for slow in slows:
-        g.nodes[slow]["color"] = "skyblue"
-      for fast in fasts:
-        g.nodes[fast]["color"] = "skyblue"
-    break  # temp
-  #endregion
-
 
 
 if __name__ == '__main__':

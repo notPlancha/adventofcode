@@ -41,27 +41,36 @@ def main(file: Path, n_blinked: int):
   #endregion
   pp(adj_list)
 
-  # find first loop
-  root = root_stones[0]
-  visited = dict()
-  nodes_that_spawned_more = deque()
-  i = 0
-  while True:
-    i += 1
-    if root in visited:
-      break
-    visited[root] = i
-    children = adj_list[root]
-    if len(children) > 1:
-      nodes_that_spawned_more.append(root)
-    root = adj_list[root][0]
-  pp(visited)
-  ic(nodes_that_spawned_more)
-  print(f"found loop of {i - visited[root]} nodes at node={root}")
-  print(f"This root node spawned {len(nodes_that_spawned_more)} children, {
-  len(nodes_that_spawned_more) - len(list(filter(lambda x: x in nodes_that_spawned_more and visited[x] > visited[root], nodes_that_spawned_more)))
-  } of which are outside the loop")
 
+
+  # #region find first loop
+  # root = root_stones[0]
+  # visited = dict()
+  # nodes_that_spawned_more = deque()
+  # i = 0
+  # while True:
+  #   i += 1
+  #   if root in visited:
+  #     break
+  #   visited[root] = i
+  #   children = adj_list[root]
+  #   if len(children) > 1:
+  #     nodes_that_spawned_more.append(root)
+  #   root = adj_list[root][0]
+  # pp(visited)
+  # ic(nodes_that_spawned_more)
+  # print(f"found loop of {i - visited[root]} nodes at node={root}")
+  # print(f"This root node spawned {len(nodes_that_spawned_more)} children, {
+  # len(nodes_that_spawned_more) - len(list(filter(lambda x: x in nodes_that_spawned_more and visited[x] > visited[root], nodes_that_spawned_more)))
+  # } of which are outside the loop")
+  # """
+  #   This would result in an out of:
+  #   def out_of_stone(stone, depth = 75):
+  #     return 1 (last number) +
+  #       + out_of_stone(stone) of stones outside of the loop found, for each stone, with depth = 75 - visited[stone]
+  #       + out_of_stone(stone) of stones inside of the loop found, for each stone, times the number that that stone is repeated in the loop (eg 4048, the first number after the loop,
+  # """
+  # #endregion
   #region calculate out
   @dataclass
   class Out:
