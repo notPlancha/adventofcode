@@ -4,6 +4,8 @@ from pathlib import Path
 from pyprojroot.here import here
 from icecream import ic
 import matplotlib.pyplot as plt
+from pprint import pp
+
 ic.enable()
 
 def main(file: Path, n_blinked: int):
@@ -37,21 +39,44 @@ def main(file: Path, n_blinked: int):
   else:
     print(f"incomplete graph consisting of {len(adj_list)} nodes ({n_blinked} iterations)")
   #endregion
-  ic(adj_list)
+  pp(adj_list)
+
+  # find first loop
+  root = root_stones[0]
+  visited = dict()
+  nodes_that_spawned_more = deque()
+  i = 0
+  while True:
+    i += 1
+    if root in visited:
+      break
+    visited[root] = i
+    children = adj_list[root]
+    if len(children) > 1:
+      nodes_that_spawned_more.append(root)
+    root = adj_list[root][0]
+  pp(visited)
+  ic(nodes_that_spawned_more)
+  print(f"found loop of {i - visited[root]} nodes at node={root}")
+  print(f"This root node spawned {len(nodes_that_spawned_more)} children, {
+  len(nodes_that_spawned_more) - len(list(filter(lambda x: x in nodes_that_spawned_more and visited[x] > visited[root], nodes_that_spawned_more)))
+  } of which are outside the loop")
+
+  #region calculate out
   @dataclass
   class Out:
     val: int = 0
   out = Out()
-
   def transverse(stone, depth = 0):
     if depth == n_blinked:
       out.val += 1
       return
     for child in adj_list[stone]:
       transverse(child, depth+1)
-  for root in root_stones:
-    ic(root)
-    transverse(root)
+  #for root in root_stones:
+  #  ic(root)
+  #  transverse(root)
+  #endregion
   return out.val
 
 if __name__ == '__main__':
