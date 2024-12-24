@@ -10,6 +10,7 @@ version = "0.1.0"
 black = 'ruff format *.py --config "indent-width = 2"'
 jit = 'python -X jit'
 profile = 'pyinstrument'
+timeit = "hyperfine '$0'" # doesnt work
 
 [dependencies]
 python = ">=3.13.1,<3.14"

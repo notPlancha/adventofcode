@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from pprint import pp
 from functools import cache, lru_cache
 
-stones = deque()
-stones.extend(map(int, Path("input.txt").read_text().split(" ")))
 
+stones = deque()
+stones.extend(map(int, Path(here("2024/day11/input.txt")).read_text().split(" ")))
 
 @cache
 def t(stone):
