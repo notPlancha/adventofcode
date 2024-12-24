@@ -134,7 +134,7 @@ def main(viz=False, file_name=here("2024/day11/input.txt"), times_to_blink=75):
       for fast in fasts:
         g.nodes[fast]["color"] = "skyblue"
     break  # temp
-#endregion
+  #endregion
 
 
 

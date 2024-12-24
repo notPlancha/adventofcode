@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from pyprojroot.here import here
 from icecream import ic
-
+import matplotlib.pyplot as plt
 ic.enable()
 
 def main(file: Path, n_blinked: int):
@@ -37,7 +37,7 @@ def main(file: Path, n_blinked: int):
   else:
     print(f"incomplete graph consisting of {len(adj_list)} nodes ({n_blinked} iterations)")
   #endregion
-
+  ic(adj_list)
   @dataclass
   class Out:
     val: int = 0
@@ -53,7 +53,6 @@ def main(file: Path, n_blinked: int):
     ic(root)
     transverse(root)
   return out.val
-
 
 if __name__ == '__main__':
   out = ic(main(file = here("2024/day11/test.txt"), n_blinked = 75))
