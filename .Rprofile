@@ -1,1 +1,2 @@
 require(pak)
+require(conflicted)
