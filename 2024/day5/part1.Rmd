@@ -1,0 +1,42 @@
+```{r}
+library(tidyverse)
+library(here)
+library(magrittr)
+conflicts_prefer(dplyr::filter)
+
+input <- read_file(here("2024", "day5", "input.txt")) %>% str_split("\n\n" %>% fixed)
+rules <- input[[1]][1] %>% str_split("\n" %>% fixed) %>% .[[1]]
+lists <- input[[1]][2] %>% str_split("\n" %>% fixed) %>% .[[1]]
+```
+
+
+```{r}
+rules_dict <- tribble(~left, ~right)
+for(rule in rules) {
+  left_and_right <- rule %>% str_split("|" %>% fixed)
+  rules_dict %<>% add_row(left = left_and_right[[1]][1], right = left_and_right[[1]][2])
+}
+rules_dict
+```
+
+```{r}
+library(glue)
+is_valid <- function (l) {
+  l %>% str_split("," %>% fixed) %>% .[[1]] -> l
+  rules_dict %>% filter(left %in% l, right %in% l) -> rules_spec
+  for (i in 1:nrow(rules_spec)) {
+    left <- rules_spec[i, "left"]
+    right <- rules_spec[i, "right"]
+    if (rules %>% str_detect(glue("{left}.*{right}")) %>% isFALSE()) {
+      return(FALSE)
+    }
+  }
+  TRUE
+}
+is_valid(lists[1])
+```
+
+```{r}
+lists %>% lapply(is_valid)
+```
+
