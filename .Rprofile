@@ -1,2 +1,2 @@
-require(pak)
+source("renv/activate.R")
 require(conflicted)
