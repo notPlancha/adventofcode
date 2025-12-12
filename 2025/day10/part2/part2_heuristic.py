@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-import itertools
-import more_itertools
 from icecream import ic
 from collections import Counter
 machines = []
@@ -136,6 +134,6 @@ if __name__ == "__main__":
   for machine in machines:
     ic(machine.objective)
     ret += ic(find_in_machine(machine=machine))
-    print(f"{ret=}")
+    print(f"{machine.objective=},{ret=}")
   print(ret)
 

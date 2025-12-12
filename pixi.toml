@@ -1,4 +1,4 @@
-[project]
+[workspace]
 authors = ["notPlancha <31565873+notPlancha@users.noreply.github.com>"]
 channels = ["conda-forge"]
 description = "Add a short description here"
@@ -39,6 +39,20 @@ pytictoc = ">=1.5.3, <2"
 pypy310 = {features = ["pypy310"], no-default-feature = true}
 pulp = {features = ["pulp"], no-default-feature = true}
 jit = {features = ["jit"], no-default-feature = false}
+cplex = {features = ["cplex"], no-default-feature = true}
+
+[feature.cplex.dependencies]
+python = ">=3.12.12,<3.13"
+cplex = ">=22.1.2,<23"
+pyomo = ">=6.9.5,<7"
+numpy = ">=2.3.5,<3"
+scipy = ">=1.16.3,<2"
+glpk = ">=5.0,<6"
+cyipopt = ">=1.6.1,<2"
+
+[feature.cplex]
+channels = ["conda-forge", "ibmdecisionoptimization"]
+platforms = ["linux-64"]
 
 [feature.jit.tasks]
 python = 'python -X jit'
