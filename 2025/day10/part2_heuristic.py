@@ -35,6 +35,14 @@ class Machine:
       button_click_count = self.button_click_count.copy()
     )
 
+
+def click_buttons_from_counts(machine: Machine, buttons_counts: list[tuple[int, Button]]) -> Machine:
+  new_m = machine.copy()
+  for count, button in buttons_counts:
+    for _ in range(count):
+      new_m.click_button(button)
+  return new_m
+  
 # read file
 with open("2025/day10/input.txt") as f:
   lines = f.readlines()
@@ -56,9 +64,9 @@ def check(machine) -> bool:
 def find_in_machine(machine: Machine) -> int:
   """
     heuristic approach:
-      - get index of max of objective
+      - get index of min of objective
       - find buttons that click that index
-      - make combinations of those buttons (with sum of counter = max)
+      - make combinations of those buttons (with sum of counter = min)
       - 1 state per combination
       - check if state is objective
       - if not check if any index exceeds objective, if so discard
@@ -66,36 +74,50 @@ def find_in_machine(machine: Machine) -> int:
       - repeat
   """
   machine_list = [machine]
+  indexes_checked = set()
+  buttons_checked = set()
   for _ in range(sum(machine.objective)):
-    # get index of max
-    index_of_max = machine.objective.index(max_obj := max(machine.objective))
+    # get index of min
+    tmp = [999 if i in indexes_checked else machine.objective[i] for i in range(len(machine.objective))]
+    index_of_min = tmp.index(min_obj := min(tmp))
     # find buttons that click that index
-    buttons_that_click_max = [
-      button for button in machine.buttons if index_of_max in button
+    buttons_that_click_min = [
+      button for button in machine.buttons if index_of_min in button
     ]
-    # make combinations of those buttons
+    buttons_that_click_min = [b for b in buttons_that_click_min if b not in buttons_checked]
+    ic(index_of_min, min_obj, buttons_that_click_min, [machine.state for machine in machine_list])
     new_machine_list = []
+    # Discard Buttons and index that is going to be used
+    for b in buttons_that_click_min:
+      buttons_checked.add(b)
+    indexes_checked.add(index_of_min)
+    
+    ic(indexes_checked, buttons_checked)
+    if len(buttons_that_click_min) == 0:
+      continue
+    
+    # make combinations of those buttons
     for machine_ in machine_list:
-      new_m = machine_.copy()
-      for tup in distribute(max_obj, len(buttons_that_click_max)): # tup is (7,0,0)
-        for i, count in enumerate(tup):
-          for _ in range(count):
-            new_m.click_button(buttons_that_click_max[i])
-      if check(new_m):
-        return sum(new_m.button_click_count.values())
-      new_machine_list.append(new_m)
+      for tup in distribute(min_obj - machine_.state[index_of_min], len(buttons_that_click_min)): # tup is (0,0,7)
+        new_m = click_buttons_from_counts(
+          machine_.copy(),
+          [(tup[i], buttons_that_click_min[i]) for i in range(len(buttons_that_click_min))]
+        )
+        new_machine_list.append(new_m)
     machine_list = new_machine_list
-    # filter out machines that exceed objective
-    machine_list = [
-      m for m in machine_list if all(
-        m.state[i] <= m.objective[i] for i in range(len(m.state))
-      )
-    ]
-    # discard buttons that click that index
+    # check here
+    rets = []
     for m in machine_list:
-      m.buttons = [
-        button for button in m.buttons if index_of_max not in button
-      ]
+      if check(m):
+        rets.append(m)
+    if len(rets) > 0:
+      ic(rets)
+      return min(
+        sum(m.button_click_count.values()) for m in rets
+      )
+    
+    # DONT FILTER BECAUSE IT CAN FUCK UP INDEXES OF BUTTONS I CACHING THEM
+    pass
     # repeat
   raise Exception(f"No solution found: {machine.objective}")
         
@@ -110,9 +132,10 @@ def distribute(n, k):
 
 if __name__ == "__main__":
   ret = 0
-  # ic.disable()
+  ic.disable()
   for machine in machines:
     ic(machine.objective)
-    ret += find_in_machine(machine=machine)
+    ret += ic(find_in_machine(machine=machine))
+    print(f"{ret=}")
   print(ret)
 
