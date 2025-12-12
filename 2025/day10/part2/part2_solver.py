@@ -70,7 +70,7 @@ def construct_model(problem: Problem) -> pyo.ConcreteModel:
   
   # apply constrains matrix horizontally
   for i, line in enumerate(matrix):
-    setattr(model, f"Constraint_{problem.joltages[i]}", pyo.Constraint(expr = pyo.quicksum(line) == problem.joltages[i]))
+    setattr(model, f"Constraint_{problem.joltages[i]}_{i}", pyo.Constraint(expr = pyo.quicksum(line) == problem.joltages[i]))
   
   return model
 
